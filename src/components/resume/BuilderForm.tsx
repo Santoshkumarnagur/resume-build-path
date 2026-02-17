@@ -1,5 +1,6 @@
 import type { ResumeData, Education, Experience, Project } from "@/hooks/useResumeData";
 import { Plus, Trash2, Sparkles } from "lucide-react";
+import BulletGuidance from "./BulletGuidance";
 
 interface Props {
   data: ResumeData;
@@ -144,6 +145,7 @@ const BuilderForm = ({ data, updateField, loadSample }: Props) => {
             value={exp.description}
             onChange={(e) => updateExperience(i, { description: e.target.value })}
           />
+          <BulletGuidance text={exp.description} />
         </div>
       ))}
 
@@ -166,6 +168,7 @@ const BuilderForm = ({ data, updateField, loadSample }: Props) => {
             value={proj.description}
             onChange={(e) => updateProject(i, { description: e.target.value })}
           />
+          <BulletGuidance text={proj.description} />
           <input className={`${inputCls} mt-2`} placeholder="Link" value={proj.link} onChange={(e) => updateProject(i, { link: e.target.value })} />
         </div>
       ))}

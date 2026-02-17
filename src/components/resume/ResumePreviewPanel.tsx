@@ -1,27 +1,68 @@
 import type { ResumeData } from "@/hooks/useResumeData";
+import type { TemplateName } from "@/hooks/useTemplate";
 import { Mail, Phone, MapPin, Github, Linkedin } from "lucide-react";
 
 interface Props {
   data: ResumeData;
   printMode?: boolean;
+  template?: TemplateName;
 }
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+const templateStyles: Record<TemplateName, {
+  wrapper: string;
+  printWrapper: string;
+  headerAlign: string;
+  sectionBorder: string;
+  skillStyle: string;
+}> = {
+  classic: {
+    wrapper: "font-serif",
+    printWrapper: "font-serif",
+    headerAlign: "text-center",
+    sectionBorder: "border-b pb-1 mb-2",
+    skillStyle: "px-2 py-0.5 rounded",
+  },
+  modern: {
+    wrapper: "font-sans",
+    printWrapper: "font-sans",
+    headerAlign: "text-left",
+    sectionBorder: "border-b-2 pb-1 mb-2",
+    skillStyle: "px-2.5 py-1 rounded-full",
+  },
+  minimal: {
+    wrapper: "font-mono text-[13px]",
+    printWrapper: "font-mono text-[13px]",
+    headerAlign: "text-center",
+    sectionBorder: "mb-2",
+    skillStyle: "px-2 py-0.5",
+  },
+};
+
+const Section = ({
+  title,
+  children,
+  sectionBorder,
+}: {
+  title: string;
+  children: React.ReactNode;
+  sectionBorder: string;
+}) => (
   <div className="mb-5">
-    <h2 className={`text-xs font-semibold uppercase tracking-widest border-b pb-1 mb-2 ${
-      // printMode uses black, live preview uses muted
-      "text-muted-foreground border-border"
-    }`}>
+    <h2
+      className={`text-xs font-semibold uppercase tracking-widest text-muted-foreground border-border ${sectionBorder}`}
+    >
       {title}
     </h2>
     {children}
   </div>
 );
 
-const ResumePreviewPanel = ({ data, printMode }: Props) => {
+const ResumePreviewPanel = ({ data, printMode, template = "classic" }: Props) => {
+  const ts = templateStyles[template];
+
   const base = printMode
-    ? "bg-white text-black p-10 max-w-[800px] mx-auto font-sans"
-    : "bg-card border border-border rounded-lg p-8 font-sans text-foreground";
+    ? `bg-white text-black p-10 max-w-[800px] mx-auto ${ts.printWrapper}`
+    : `bg-card border border-border rounded-lg p-8 text-foreground ${ts.wrapper}`;
 
   const hasContent =
     data.name || data.summary || data.education.length || data.experience.length || data.projects.length || data.skills;
@@ -47,9 +88,9 @@ const ResumePreviewPanel = ({ data, printMode }: Props) => {
   return (
     <div className={base}>
       {/* Header */}
-      <div className="mb-6 text-center">
+      <div className={`mb-6 ${ts.headerAlign}`}>
         {data.name && <h1 className={`text-2xl font-bold ${textPrimary}`}>{data.name}</h1>}
-        <div className={`flex items-center justify-center gap-4 mt-2 text-xs ${textSecondary} flex-wrap`}>
+        <div className={`flex items-center ${ts.headerAlign === "text-center" ? "justify-center" : "justify-start"} gap-4 mt-2 text-xs ${textSecondary} flex-wrap`}>
           {data.email && (
             <span className="flex items-center gap-1"><Mail className="w-3 h-3" />{data.email}</span>
           )}
@@ -60,7 +101,7 @@ const ResumePreviewPanel = ({ data, printMode }: Props) => {
             <span className="flex items-center gap-1"><MapPin className="w-3 h-3" />{data.location}</span>
           )}
         </div>
-        <div className={`flex items-center justify-center gap-4 mt-1 text-xs ${textSecondary}`}>
+        <div className={`flex items-center ${ts.headerAlign === "text-center" ? "justify-center" : "justify-start"} gap-4 mt-1 text-xs ${textSecondary}`}>
           {data.github && (
             <span className="flex items-center gap-1"><Github className="w-3 h-3" />{data.github}</span>
           )}
@@ -70,16 +111,14 @@ const ResumePreviewPanel = ({ data, printMode }: Props) => {
         </div>
       </div>
 
-      {/* Summary */}
       {data.summary && (
-        <Section title="Summary">
+        <Section title="Summary" sectionBorder={ts.sectionBorder}>
           <p className={`text-sm leading-relaxed ${textSecondary}`}>{data.summary}</p>
         </Section>
       )}
 
-      {/* Experience */}
       {data.experience.length > 0 && (
-        <Section title="Experience">
+        <Section title="Experience" sectionBorder={ts.sectionBorder}>
           {data.experience.map((exp, i) => (
             <div key={i} className="mb-3">
               <div className="flex justify-between items-baseline">
@@ -93,9 +132,8 @@ const ResumePreviewPanel = ({ data, printMode }: Props) => {
         </Section>
       )}
 
-      {/* Education */}
       {data.education.length > 0 && (
-        <Section title="Education">
+        <Section title="Education" sectionBorder={ts.sectionBorder}>
           {data.education.map((edu, i) => (
             <div key={i} className="mb-3">
               <div className="flex justify-between items-baseline">
@@ -108,9 +146,8 @@ const ResumePreviewPanel = ({ data, printMode }: Props) => {
         </Section>
       )}
 
-      {/* Projects */}
       {data.projects.length > 0 && (
-        <Section title="Projects">
+        <Section title="Projects" sectionBorder={ts.sectionBorder}>
           {data.projects.map((proj, i) => (
             <div key={i} className="mb-3">
               <p className={`text-sm font-semibold ${textPrimary}`}>{proj.name}</p>
@@ -121,14 +158,13 @@ const ResumePreviewPanel = ({ data, printMode }: Props) => {
         </Section>
       )}
 
-      {/* Skills */}
       {data.skills && (
-        <Section title="Skills">
+        <Section title="Skills" sectionBorder={ts.sectionBorder}>
           <div className="flex flex-wrap gap-1.5">
             {data.skills.split(",").map((skill, i) => (
               <span
                 key={i}
-                className={`text-xs px-2 py-0.5 rounded ${
+                className={`text-xs ${ts.skillStyle} ${
                   printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"
                 }`}
               >
