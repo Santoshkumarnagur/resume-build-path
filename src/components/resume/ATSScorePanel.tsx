@@ -33,7 +33,7 @@ const ATSScorePanel = ({ result, data }: Props) => {
     if (!/\d+%|\d+[xX]|\d+k|\d+\+|\$\d+/.test(allText)) improvements.push("Include measurable impact with numbers in your bullets.");
     const words = data.summary.trim().split(/\s+/).filter(Boolean).length;
     if (words < 40) improvements.push("Expand your summary to at least 40 words.");
-    const skillCount = data.skills.technical.length + data.skills.soft.length + data.skills.tools.length;
+    const skillCount = data.skills.split(",").map(s => s.trim()).filter(Boolean).length;
     if (skillCount < 8) improvements.push("List at least 8 skills to pass ATS filters.");
     if (data.experience.length === 0) improvements.push("Add an internship or work experience entry.");
   }

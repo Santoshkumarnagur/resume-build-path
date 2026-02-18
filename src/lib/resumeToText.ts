@@ -33,21 +33,15 @@ export function resumeToPlainText(data: ResumeData): string {
     lines.push("PROJECTS");
     data.projects.forEach((proj) => {
       lines.push(proj.name);
-      if (proj.techStack.length > 0) lines.push(`  Tech: ${proj.techStack.join(", ")}`);
+      if (proj.techStack) lines.push(`  Tech: ${proj.techStack}`);
       if (proj.description) lines.push(`  ${proj.description}`);
-      if (proj.liveUrl) lines.push(`  Live: ${proj.liveUrl}`);
-      if (proj.githubUrl) lines.push(`  GitHub: ${proj.githubUrl}`);
+      if (proj.link) lines.push(`  ${proj.link}`);
     });
     lines.push("");
   }
 
-  const allSkills = [
-    ...data.skills.technical,
-    ...data.skills.soft,
-    ...data.skills.tools,
-  ];
-  if (allSkills.length > 0) {
-    lines.push("SKILLS", allSkills.join(", "), "");
+  if (data.skills) {
+    lines.push("SKILLS", data.skills, "");
   }
 
   const links = [data.github, data.linkedin].filter(Boolean);

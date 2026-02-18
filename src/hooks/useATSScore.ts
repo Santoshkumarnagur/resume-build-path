@@ -14,10 +14,6 @@ function hasMetric(text: string): boolean {
   return /\d+%|\d+[xX]|\d+k|\d+\+|\$\d+/.test(text);
 }
 
-function getAllSkillsCount(skills: ResumeData["skills"]): number {
-  return skills.technical.length + skills.soft.length + skills.tools.length;
-}
-
 export function computeATSScore(data: ResumeData): ATSResult {
   let score = 0;
   const suggestions: string[] = [];
@@ -45,7 +41,10 @@ export function computeATSScore(data: ResumeData): ATSResult {
   }
 
   // +10 skills >= 8
-  const skillCount = getAllSkillsCount(data.skills);
+  const skillCount = data.skills
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean).length;
   if (skillCount >= 8) {
     score += 10;
   } else {
