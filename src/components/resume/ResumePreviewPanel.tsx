@@ -1,6 +1,6 @@
 import type { ResumeData } from "@/hooks/useResumeData";
 import type { TemplateName } from "@/hooks/useTemplate";
-import { Mail, Phone, MapPin, Github, Linkedin } from "lucide-react";
+import { Mail, Phone, MapPin, Github, Linkedin, ExternalLink } from "lucide-react";
 
 interface Props {
   data: ResumeData;
@@ -64,8 +64,14 @@ const ResumePreviewPanel = ({ data, printMode, template = "classic" }: Props) =>
     ? `bg-white text-black p-10 max-w-[800px] mx-auto ${ts.printWrapper}`
     : `bg-card border border-border rounded-lg p-8 text-foreground ${ts.wrapper}`;
 
+  const allSkills = [
+    ...data.skills.technical,
+    ...data.skills.soft,
+    ...data.skills.tools,
+  ];
+
   const hasContent =
-    data.name || data.summary || data.education.length || data.experience.length || data.projects.length || data.skills;
+    data.name || data.summary || data.education.length || data.experience.length || data.projects.length || allSkills.length > 0;
 
   if (!hasContent) {
     return (
@@ -84,6 +90,7 @@ const ResumePreviewPanel = ({ data, printMode, template = "classic" }: Props) =>
 
   const textPrimary = printMode ? "text-black" : "text-foreground";
   const textSecondary = printMode ? "text-gray-600" : "text-muted-foreground";
+  const pillBg = printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground";
 
   return (
     <div className={base}>
@@ -149,29 +156,65 @@ const ResumePreviewPanel = ({ data, printMode, template = "classic" }: Props) =>
       {data.projects.length > 0 && (
         <Section title="Projects" sectionBorder={ts.sectionBorder}>
           {data.projects.map((proj, i) => (
-            <div key={i} className="mb-3">
-              <p className={`text-sm font-semibold ${textPrimary}`}>{proj.name}</p>
-              {proj.techStack && <p className={`text-xs font-mono ${textSecondary}`}>{proj.techStack}</p>}
-              {proj.description && <p className={`text-xs mt-1 ${textSecondary}`}>{proj.description}</p>}
+            <div key={i} className="mb-3 p-3 rounded-md border border-border/50">
+              <div className="flex items-center justify-between">
+                <p className={`text-sm font-semibold ${textPrimary}`}>{proj.name}</p>
+                <div className="flex items-center gap-2">
+                  {proj.githubUrl && (
+                    <Github className={`w-3.5 h-3.5 ${textSecondary}`} />
+                  )}
+                  {proj.liveUrl && (
+                    <ExternalLink className={`w-3.5 h-3.5 ${textSecondary}`} />
+                  )}
+                </div>
+              </div>
+              {proj.techStack.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {proj.techStack.map((t, j) => (
+                    <span key={j} className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${pillBg}`}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {proj.description && <p className={`text-xs mt-1.5 ${textSecondary}`}>{proj.description}</p>}
             </div>
           ))}
         </Section>
       )}
 
-      {data.skills && (
+      {allSkills.length > 0 && (
         <Section title="Skills" sectionBorder={ts.sectionBorder}>
-          <div className="flex flex-wrap gap-1.5">
-            {data.skills.split(",").map((skill, i) => (
-              <span
-                key={i}
-                className={`text-xs ${ts.skillStyle} ${
-                  printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"
-                }`}
-              >
-                {skill.trim()}
-              </span>
-            ))}
-          </div>
+          {data.skills.technical.length > 0 && (
+            <div className="mb-2">
+              <p className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${textSecondary}`}>Technical</p>
+              <div className="flex flex-wrap gap-1.5">
+                {data.skills.technical.map((skill, i) => (
+                  <span key={i} className={`text-xs ${ts.skillStyle} ${pillBg}`}>{skill}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.skills.soft.length > 0 && (
+            <div className="mb-2">
+              <p className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${textSecondary}`}>Soft Skills</p>
+              <div className="flex flex-wrap gap-1.5">
+                {data.skills.soft.map((skill, i) => (
+                  <span key={i} className={`text-xs ${ts.skillStyle} ${pillBg}`}>{skill}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.skills.tools.length > 0 && (
+            <div className="mb-2">
+              <p className={`text-[10px] uppercase tracking-wider font-semibold mb-1 ${textSecondary}`}>Tools & Technologies</p>
+              <div className="flex flex-wrap gap-1.5">
+                {data.skills.tools.map((skill, i) => (
+                  <span key={i} className={`text-xs ${ts.skillStyle} ${pillBg}`}>{skill}</span>
+                ))}
+              </div>
+            </div>
+          )}
         </Section>
       )}
     </div>
