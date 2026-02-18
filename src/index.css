@@ -78,3 +78,26 @@
     text-shadow: 0 0 20px hsl(var(--glow) / 0.5);
   }
 }
+
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print\\:hidden {
+    display: none !important;
+  }
+
+  @page {
+    margin: 0.5in;
+    size: letter;
+  }
+
+  /* Prevent splitting inside entries */
+  .mb-3, .mb-5 {
+    break-inside: avoid;
+  }
+}
