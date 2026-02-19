@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, Copy, Check, AlertTriangle } from "lucide-react";
 import type { ResumeData } from "@/hooks/useResumeData";
 import { resumeToPlainText } from "@/lib/resumeToText";
+import { toast } from "@/hooks/use-toast";
 
 interface Props {
   data: ResumeData;
@@ -17,6 +18,7 @@ const ExportBar = ({ data }: Props) => {
 
   const handlePrint = () => {
     window.print();
+    toast({ title: "PDF export ready!", description: "Check your downloads." });
   };
 
   const handleCopy = async () => {
