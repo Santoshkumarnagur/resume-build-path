@@ -29,6 +29,7 @@ const SectionHeader = ({ title, onAdd }: { title: string; onAdd?: () => void }) 
 );
 
 const BuilderForm = ({ data, updateField, loadSample }: Props) => {
+  const skillCategories = data.skillCategories ?? { technical: [], soft: [], tools: [] };
   const [expandedProjects, setExpandedProjects] = useState<Record<number, boolean>>({});
   const [suggestingSkills, setSuggestingSkills] = useState(false);
 
@@ -87,9 +88,9 @@ const BuilderForm = ({ data, updateField, loadSample }: Props) => {
         ...additions.filter((a) => !existing.includes(a)),
       ];
       const next: SkillCategories = {
-        technical: merge(data.skillCategories.technical, ["TypeScript", "React", "Node.js", "PostgreSQL", "GraphQL"]),
-        soft: merge(data.skillCategories.soft, ["Team Leadership", "Problem Solving"]),
-        tools: merge(data.skillCategories.tools, ["Git", "Docker", "AWS"]),
+        technical: merge(skillCategories.technical, ["TypeScript", "React", "Node.js", "PostgreSQL", "GraphQL"]),
+        soft: merge(skillCategories.soft, ["Team Leadership", "Problem Solving"]),
+        tools: merge(skillCategories.tools, ["Git", "Docker", "AWS"]),
       };
       updateField("skillCategories", next);
       const all = [...next.technical, ...next.soft, ...next.tools];
@@ -264,10 +265,10 @@ const BuilderForm = ({ data, updateField, loadSample }: Props) => {
         {skillCats.map(({ key, label }) => (
           <div key={key}>
             <label className="font-mono text-[10px] text-muted-foreground uppercase tracking-widest mb-1 block">
-              {label} ({data.skillCategories[key].length})
+              {label} ({skillCategories[key].length})
             </label>
             <TagInput
-              tags={data.skillCategories[key]}
+              tags={skillCategories[key]}
               onChange={(tags) => updateSkillCategory(key, tags)}
               placeholder={`Add ${label.toLowerCase()}…`}
             />

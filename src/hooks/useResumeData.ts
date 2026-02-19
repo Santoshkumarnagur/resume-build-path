@@ -122,7 +122,16 @@ export function useResumeData() {
   const loadFromStorage = (): ResumeData => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      return stored ? JSON.parse(stored) : emptyResume;
+      if (!stored) return emptyResume;
+      const parsed = JSON.parse(stored);
+      // Migrate old data missing new fields
+      if (!parsed.skillCategories) parsed.skillCategories = { technical: [], soft: [], tools: [] };
+      parsed.projects = (parsed.projects || []).map((p: any) => ({
+        ...p,
+        techStackTags: p.techStackTags || [],
+        githubUrl: p.githubUrl || "",
+      }));
+      return parsed as ResumeData;
     } catch {
       return emptyResume;
     }
