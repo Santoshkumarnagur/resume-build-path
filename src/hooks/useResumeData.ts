@@ -20,7 +20,15 @@ export interface Project {
   name: string;
   description: string;
   techStack: string;
+  techStackTags: string[];
   link: string;
+  githubUrl: string;
+}
+
+export interface SkillCategories {
+  technical: string[];
+  soft: string[];
+  tools: string[];
 }
 
 export interface ResumeData {
@@ -33,6 +41,7 @@ export interface ResumeData {
   experience: Experience[];
   projects: Project[];
   skills: string;
+  skillCategories: SkillCategories;
   github: string;
   linkedin: string;
 }
@@ -49,6 +58,7 @@ const emptyResume: ResumeData = {
   experience: [],
   projects: [],
   skills: "",
+  skillCategories: { technical: [], soft: [], tools: [] },
   github: "",
   linkedin: "",
 };
@@ -93,10 +103,17 @@ const sampleResume: ResumeData = {
       description:
         "Open-source developer dashboard aggregating GitHub, Jira, and Slack metrics into a single view.",
       techStack: "React, TypeScript, GraphQL",
+      techStackTags: ["React", "TypeScript", "GraphQL"],
       link: "https://github.com/alexj/devdash",
+      githubUrl: "https://github.com/alexj/devdash",
     },
   ],
   skills: "TypeScript, React, Node.js, PostgreSQL, AWS, Docker, GraphQL, Python, Git, CI/CD",
+  skillCategories: {
+    technical: ["TypeScript", "React", "Node.js", "PostgreSQL", "GraphQL"],
+    soft: ["Team Leadership", "Problem Solving"],
+    tools: ["Git", "Docker", "AWS"],
+  },
   github: "https://github.com/alexjohnson",
   linkedin: "https://linkedin.com/in/alexjohnson",
 };
