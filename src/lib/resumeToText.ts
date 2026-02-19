@@ -33,14 +33,22 @@ export function resumeToPlainText(data: ResumeData): string {
     lines.push("PROJECTS");
     data.projects.forEach((proj) => {
       lines.push(proj.name);
-      if (proj.techStack) lines.push(`  Tech: ${proj.techStack}`);
+      const tech = proj.techStackTags?.length ? proj.techStackTags.join(", ") : proj.techStack;
+      if (tech) lines.push(`  Tech: ${tech}`);
       if (proj.description) lines.push(`  ${proj.description}`);
       if (proj.link) lines.push(`  ${proj.link}`);
+      if (proj.githubUrl && proj.githubUrl !== proj.link) lines.push(`  ${proj.githubUrl}`);
     });
     lines.push("");
   }
 
-  if (data.skills) {
+  if (data.skillCategories?.technical?.length || data.skillCategories?.soft?.length || data.skillCategories?.tools?.length) {
+    lines.push("SKILLS");
+    if (data.skillCategories.technical.length) lines.push(`Technical: ${data.skillCategories.technical.join(", ")}`);
+    if (data.skillCategories.soft.length) lines.push(`Soft Skills: ${data.skillCategories.soft.join(", ")}`);
+    if (data.skillCategories.tools.length) lines.push(`Tools: ${data.skillCategories.tools.join(", ")}`);
+    lines.push("");
+  } else if (data.skills) {
     lines.push("SKILLS", data.skills, "");
   }
 

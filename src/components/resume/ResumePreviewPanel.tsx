@@ -1,6 +1,6 @@
 import type { ResumeData } from "@/hooks/useResumeData";
 import type { TemplateName } from "@/hooks/useTemplate";
-import { Mail, Phone, MapPin, Github, Linkedin } from "lucide-react";
+import { Mail, Phone, MapPin, Github, Linkedin, ExternalLink } from "lucide-react";
 
 interface Props {
   data: ResumeData;
@@ -64,8 +64,9 @@ const ResumePreviewPanel = ({ data, printMode, template = "classic" }: Props) =>
     ? `bg-white text-black p-10 max-w-[800px] mx-auto ${ts.printWrapper}`
     : `bg-card border border-border rounded-lg p-8 text-foreground ${ts.wrapper}`;
 
+  const hasSkills = data.skills || data.skillCategories?.technical?.length || data.skillCategories?.soft?.length || data.skillCategories?.tools?.length;
   const hasContent =
-    data.name || data.summary || data.education.length || data.experience.length || data.projects.length || data.skills;
+    data.name || data.summary || data.education.length || data.experience.length || data.projects.length || hasSkills;
 
   if (!hasContent) {
     return (
@@ -149,29 +150,78 @@ const ResumePreviewPanel = ({ data, printMode, template = "classic" }: Props) =>
       {data.projects.length > 0 && (
         <Section title="Projects" sectionBorder={ts.sectionBorder}>
           {data.projects.map((proj, i) => (
-            <div key={i} className="mb-3">
-              <p className={`text-sm font-semibold ${textPrimary}`}>{proj.name}</p>
-              {proj.techStack && <p className={`text-xs font-mono ${textSecondary}`}>{proj.techStack}</p>}
-              {proj.description && <p className={`text-xs mt-1 ${textSecondary}`}>{proj.description}</p>}
+            <div key={i} className={`mb-3 p-3 rounded-md ${printMode ? "border border-gray-200" : "border border-border bg-secondary/20"}`}>
+              <div className="flex items-center justify-between">
+                <p className={`text-sm font-semibold ${textPrimary}`}>{proj.name}</p>
+                <div className="flex items-center gap-2">
+                  {proj.link && (
+                    <a href={proj.link} target="_blank" rel="noopener noreferrer" className={`${textSecondary} hover:${textPrimary}`}>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
+                  {proj.githubUrl && (
+                    <a href={proj.githubUrl} target="_blank" rel="noopener noreferrer" className={`${textSecondary} hover:${textPrimary}`}>
+                      <Github className="w-3 h-3" />
+                    </a>
+                  )}
+                </div>
+              </div>
+              {(proj.techStackTags?.length > 0 || proj.techStack) && (
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {(proj.techStackTags?.length > 0 ? proj.techStackTags : proj.techStack.split(",").map(s => s.trim()).filter(Boolean)).map((t, j) => (
+                    <span key={j} className={`text-[10px] ${ts.skillStyle} ${printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"}`}>
+                      {t}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {proj.description && <p className={`text-xs mt-1.5 ${textSecondary}`}>{proj.description}</p>}
             </div>
           ))}
         </Section>
       )}
 
-      {data.skills && (
+      {/* Skills - grouped by category */}
+      {(data.skillCategories?.technical?.length > 0 || data.skillCategories?.soft?.length > 0 || data.skillCategories?.tools?.length > 0 || data.skills) && (
         <Section title="Skills" sectionBorder={ts.sectionBorder}>
-          <div className="flex flex-wrap gap-1.5">
-            {data.skills.split(",").map((skill, i) => (
-              <span
-                key={i}
-                className={`text-xs ${ts.skillStyle} ${
-                  printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"
-                }`}
-              >
-                {skill.trim()}
-              </span>
-            ))}
-          </div>
+          {data.skillCategories?.technical?.length > 0 && (
+            <div className="mb-2">
+              <p className={`text-[10px] font-semibold uppercase tracking-wider mb-1 ${textSecondary}`}>Technical</p>
+              <div className="flex flex-wrap gap-1">
+                {data.skillCategories.technical.map((s, i) => (
+                  <span key={i} className={`text-xs ${ts.skillStyle} ${printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"}`}>{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.skillCategories?.soft?.length > 0 && (
+            <div className="mb-2">
+              <p className={`text-[10px] font-semibold uppercase tracking-wider mb-1 ${textSecondary}`}>Soft Skills</p>
+              <div className="flex flex-wrap gap-1">
+                {data.skillCategories.soft.map((s, i) => (
+                  <span key={i} className={`text-xs ${ts.skillStyle} ${printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"}`}>{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.skillCategories?.tools?.length > 0 && (
+            <div className="mb-2">
+              <p className={`text-[10px] font-semibold uppercase tracking-wider mb-1 ${textSecondary}`}>Tools & Technologies</p>
+              <div className="flex flex-wrap gap-1">
+                {data.skillCategories.tools.map((s, i) => (
+                  <span key={i} className={`text-xs ${ts.skillStyle} ${printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"}`}>{s}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Fallback for flat skills if no categories */}
+          {!data.skillCategories?.technical?.length && !data.skillCategories?.soft?.length && !data.skillCategories?.tools?.length && data.skills && (
+            <div className="flex flex-wrap gap-1.5">
+              {data.skills.split(",").map((skill, i) => (
+                <span key={i} className={`text-xs ${ts.skillStyle} ${printMode ? "bg-gray-100 text-gray-700" : "bg-secondary text-secondary-foreground"}`}>{skill.trim()}</span>
+              ))}
+            </div>
+          )}
         </Section>
       )}
     </div>
