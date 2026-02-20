@@ -22,7 +22,7 @@ const BuilderPage = () => {
         </div>
         {/* Right — Live Preview + ATS */}
         <div className="flex-[5] overflow-auto p-6 bg-surface space-y-6">
-          <ATSScorePanel result={atsResult} data={data} />
+          <ATSScorePanel result={atsResult} />
           <TemplateAndColorPicker
             template={template}
             onTemplateChange={setTemplate}
