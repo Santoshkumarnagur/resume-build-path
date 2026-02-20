@@ -3,90 +3,122 @@ import type { ResumeData } from "./useResumeData";
 
 export interface ATSResult {
   score: number;
-  suggestions: string[];
+  label: "Needs Work" | "Getting There" | "Strong Resume";
+  color: "red" | "amber" | "green";
+  suggestions: Array<{ text: string; points: number }>;
 }
 
-function countWords(text: string): number {
-  return text.trim().split(/\s+/).filter(Boolean).length;
+const ACTION_VERBS = [
+  "built","led","designed","improved","developed","created","managed","launched",
+  "implemented","delivered","optimized","reduced","increased","achieved","drove",
+  "architected","scaled","automated","deployed","shipped","spearheaded","established",
+  "collaborated","mentored","executed","streamlined","engineered","migrated",
+];
+
+function hasActionVerb(text: string): boolean {
+  const lower = text.toLowerCase();
+  return ACTION_VERBS.some((v) => new RegExp(`\\b${v}\\b`).test(lower));
 }
 
-function hasMetric(text: string): boolean {
-  return /\d+%|\d+[xX]|\d+k|\d+\+|\$\d+/.test(text);
+function totalSkills(data: ResumeData): number {
+  const cats = data.skillCategories;
+  const fromCats = (cats?.technical?.length ?? 0) + (cats?.soft?.length ?? 0) + (cats?.tools?.length ?? 0);
+  if (fromCats > 0) return fromCats;
+  return data.skills.split(",").map((s) => s.trim()).filter(Boolean).length;
 }
 
 export function computeATSScore(data: ResumeData): ATSResult {
   let score = 0;
-  const suggestions: string[] = [];
+  const suggestions: Array<{ text: string; points: number }> = [];
 
-  // +15 summary 40-120 words
-  const summaryWords = countWords(data.summary);
-  if (summaryWords >= 40 && summaryWords <= 120) {
+  // +10 name
+  if (data.name.trim()) {
+    score += 10;
+  } else {
+    suggestions.push({ text: "Add your full name (+10 points)", points: 10 });
+  }
+
+  // +10 email
+  if (data.email.trim()) {
+    score += 10;
+  } else {
+    suggestions.push({ text: "Add your email address (+10 points)", points: 10 });
+  }
+
+  // +10 summary > 50 chars
+  if (data.summary.trim().length > 50) {
+    score += 10;
+  } else {
+    suggestions.push({ text: "Write a professional summary (50+ chars) (+10 points)", points: 10 });
+  }
+
+  // +15 at least 1 experience with description
+  if (data.experience.length >= 1 && data.experience.some((e) => e.description.trim())) {
     score += 15;
   } else {
-    suggestions.push("Write a stronger summary (40–120 words).");
+    suggestions.push({ text: "Add at least 1 work experience with bullet points (+15 points)", points: 15 });
   }
 
-  // +10 at least 2 projects
-  if (data.projects.length >= 2) {
+  // +10 at least 1 education
+  if (data.education.length >= 1) {
     score += 10;
   } else {
-    suggestions.push("Add at least 2 projects.");
+    suggestions.push({ text: "Add your education details (+10 points)", points: 10 });
   }
 
-  // +10 at least 1 experience
-  if (data.experience.length >= 1) {
+  // +10 at least 5 skills
+  if (totalSkills(data) >= 5) {
     score += 10;
   } else {
-    suggestions.push("Add at least 1 work experience entry.");
+    suggestions.push({ text: "Add at least 5 skills (+10 points)", points: 10 });
   }
 
-  // +10 skills >= 8
-  const skillCount = data.skills
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean).length;
-  if (skillCount >= 8) {
+  // +10 at least 1 project
+  if (data.projects.length >= 1) {
     score += 10;
   } else {
-    suggestions.push("Add more skills (target 8+).");
+    suggestions.push({ text: "Add at least 1 project (+10 points)", points: 10 });
   }
 
-  // +10 GitHub or LinkedIn
-  if (data.github || data.linkedin) {
+  // +5 phone
+  if (data.phone.trim()) {
+    score += 5;
+  } else {
+    suggestions.push({ text: "Add your phone number (+5 points)", points: 5 });
+  }
+
+  // +5 LinkedIn
+  if (data.linkedin.trim()) {
+    score += 5;
+  } else {
+    suggestions.push({ text: "Add your LinkedIn URL (+5 points)", points: 5 });
+  }
+
+  // +5 GitHub
+  if (data.github.trim()) {
+    score += 5;
+  } else {
+    suggestions.push({ text: "Add your GitHub URL (+5 points)", points: 5 });
+  }
+
+  // +10 action verbs in summary or experience descriptions
+  const allText = [data.summary, ...data.experience.map((e) => e.description)].join(" ");
+  if (hasActionVerb(allText)) {
     score += 10;
   } else {
-    suggestions.push("Add a GitHub or LinkedIn link.");
+    suggestions.push({ text: "Use action verbs in summary/experience (built, led, designed…) (+10 points)", points: 10 });
   }
 
-  // +15 measurable impact
-  const allBullets = [
-    ...data.experience.map((e) => e.description),
-    ...data.projects.map((p) => p.description),
-  ];
-  if (allBullets.some(hasMetric)) {
-    score += 15;
-  } else {
-    suggestions.push("Add measurable impact (numbers) in bullets.");
-  }
+  const capped = Math.min(score, 100);
+  const label: ATSResult["label"] =
+    capped >= 71 ? "Strong Resume" : capped >= 41 ? "Getting There" : "Needs Work";
+  const color: ATSResult["color"] =
+    capped >= 71 ? "green" : capped >= 41 ? "amber" : "red";
 
-  // +10 education complete
-  const eduComplete =
-    data.education.length > 0 &&
-    data.education.every(
-      (e) => e.institution && e.degree && e.field && e.startDate && e.endDate
-    );
-  if (eduComplete) {
-    score += 10;
-  } else if (data.education.length === 0) {
-    suggestions.push("Add your education details.");
-  } else {
-    suggestions.push("Complete all education fields.");
-  }
+  // Sort suggestions by point value descending, show top 5
+  const sorted = suggestions.sort((a, b) => b.points - a.points).slice(0, 5);
 
-  return {
-    score: Math.min(score, 100),
-    suggestions: suggestions.slice(0, 3),
-  };
+  return { score: capped, label, color, suggestions: sorted };
 }
 
 export function useATSScore(data: ResumeData): ATSResult {
