@@ -2,20 +2,25 @@ import { useArtifacts } from "@/hooks/useArtifacts";
 
 interface TopBarProps {
   currentStep?: number;
+  isShipped?: boolean;
 }
 
-const TopBar = ({ currentStep }: TopBarProps) => {
+const TopBar = ({ currentStep, isShipped }: TopBarProps) => {
   const { isStepComplete } = useArtifacts();
 
   const getStatus = () => {
-    if (!currentStep) return "Overview";
+    if (isShipped) return "Shipped";
+    if (!currentStep) return "In Progress";
     if (isStepComplete(currentStep)) return "Complete";
     return "In Progress";
   };
 
   const status = getStatus();
+
   const statusColor =
-    status === "Complete"
+    status === "Shipped"
+      ? "bg-success/20 text-success border-success/30"
+      : status === "Complete"
       ? "bg-success/20 text-success border-success/30"
       : status === "In Progress"
       ? "bg-warning/20 text-warning border-warning/30"
@@ -27,7 +32,9 @@ const TopBar = ({ currentStep }: TopBarProps) => {
         AI Resume Builder
       </div>
       <div className="font-mono text-xs text-muted-foreground">
-        {currentStep ? `Project 3 — Step ${currentStep} of 8` : "Project 3 — Proof of Build"}
+        {currentStep
+          ? `Project 3 — Step ${currentStep} of 8`
+          : "Project 3 — Proof of Build"}
       </div>
       <span className={`text-xs font-mono px-3 py-1 rounded-full border ${statusColor}`}>
         {status}
